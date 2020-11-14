@@ -12,36 +12,44 @@ RED = (255,0,0)
 GREEN = (0,255,0)
 BACKGROUND_COLOR = (RGB_COLOR, RGB_COLOR, RGB_COLOR)
 
+lightlist = [#   red,  yellow,    green
+[[1,0,1], [1,1,0], [1,1,0]], #pole west
+[[0,1,1], [0,1,1], [0,1,1]], #pole north
+[[1,0,1], [1,1,0], [1,1,0]], #pole east
+[[0,1,1], [0,1,1], [0,1,1]]  #pole south
+]
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 myfont = pygame.font.SysFont("monospace", 35)
 
 game_over = False
 
-def build_street_light(screen, p_x, p_y):
+def build_street_light(screen, p_x, p_y, light):
     light_width = 140  # the width of the rectangle that the traffic light will be
     light_height = 40  # the height of the traffic light
     RADIUS = 10 # the radius of the light circles for each light
     Y_INSET = 20 # how low into the square each circle will be
     Y_ALIGN = p_y + Y_INSET # position in the square of where each light is
     X_COORDS = [30, 70, 110] # y coords of each of the three lights of green, yellow and red
+    
     pygame.draw.rect(screen, (0,0,0), (p_x, p_y, light_width, light_height)) # builds the square backdrop for seeing lights
     pygame.draw.rect(screen, (255,255,255), (p_x, p_y, light_width, light_height), 1) # builds the square of each light structure section
 
-    pygame.draw.circle(screen,    RED, (p_x + X_COORDS[0], Y_ALIGN), RADIUS) # red light on a section
-    pygame.draw.circle(screen, YELLOW, (p_x + X_COORDS[1], Y_ALIGN), RADIUS) # yellow light on a section
-    pygame.draw.circle(screen,  GREEN, (p_x + X_COORDS[2], Y_ALIGN), RADIUS) # green light on a section
+    pygame.draw.circle(screen,    RED, (p_x + X_COORDS[0], Y_ALIGN), RADIUS, light[0]) # red light on a section
+    pygame.draw.circle(screen, YELLOW, (p_x + X_COORDS[1], Y_ALIGN), RADIUS, light[1]) # yellow light on a section
+    pygame.draw.circle(screen,  GREEN, (p_x + X_COORDS[2], Y_ALIGN), RADIUS, light[2]) # green light on a section
 
-def build_street_light_direction(screen, p_x, p_y):
+def build_street_light_direction(screen, p_x, p_y, lights):
     light_gap = 150              # gap between each light in each direction
 
     left   = p_x                 # left turn right
     middle = p_x + light_gap     # middle straight light
     right  = p_x + (light_gap * 2) # right straight or turn light
 
-    build_street_light(screen,  right, p_y) # far right light
-    build_street_light(screen, middle, p_y) # middle light
-    build_street_light(screen,   left, p_y) # left turn light
+    build_street_light(screen,  right, p_y, lights[2][:]) # far right light
+    build_street_light(screen, middle, p_y, lights[1][:]) # middle light
+    build_street_light(screen,   left, p_y, lights[0][:]) # left turn light
 
 def set_direction_label(screen, p_x, p_y, text):
     coords = [p_x + 100, p_y - 50]
@@ -99,8 +107,8 @@ while not game_over:
     set_direction_label(screen, EAST_DIR[0], EAST_DIR[1], "East Light")
     set_direction_label(screen, NORTH_DIR[0], NORTH_DIR[1], "North Light")
 
-    build_street_light_direction(screen,  WEST_DIR[0],  WEST_DIR[1]) # WEST light
-    build_street_light_direction(screen, SOUTH_DIR[0], SOUTH_DIR[1]) # SOUTH light
-    build_street_light_direction(screen,  EAST_DIR[0],  EAST_DIR[1]) # EAST light
-    build_street_light_direction(screen, NORTH_DIR[0], NORTH_DIR[1]) # NORTH light
+    build_street_light_direction(screen,  WEST_DIR[0],  WEST_DIR[1], lightlist[:][0][:]) # WEST light
+    build_street_light_direction(screen, SOUTH_DIR[0], SOUTH_DIR[1], lightlist[:][1][:]) # SOUTH light
+    build_street_light_direction(screen,  EAST_DIR[0],  EAST_DIR[1], lightlist[:][2][:]) # EAST light
+    build_street_light_direction(screen, NORTH_DIR[0], NORTH_DIR[1], lightlist[:][3][:]) # NORTH light
     pygame.display.update()
