@@ -10,14 +10,35 @@ RGB_COLOR = 65
 YELLOW = (255, 255, 0)
 RED = (255,0,0)
 GREEN = (0,255,0)
+
 BACKGROUND_COLOR = (RGB_COLOR, RGB_COLOR, RGB_COLOR)
 
-lightlist = [#   red,  yellow,    green
-[[1,0,1], [1,1,0], [1,1,0]], #pole west
-[[0,1,1], [0,1,1], [0,1,1]], #pole north
-[[1,0,1], [1,1,0], [1,1,0]], #pole east
-[[0,1,1], [0,1,1], [0,1,1]]  #pole south
-]
+lightlist = [#   red,  yellow,    green lights              
+                [          #POLE NORTH
+                 [0,1,1],     #NORTH left turn
+                 [0,1,1],     #NORTH middle straight
+                 [0,1,1]      #NORTH right straight
+                ],
+                
+                [          #POLE EAST
+                 [1,0,1],     #EAST left turn
+                 [1,1,0],     #EAST middle straight
+                 [1,1,0]      #EAST right straight
+                ],
+                
+                [          #POLE SOUTH
+                 [0,1,1],     #SOUTH left turn
+                 [0,1,1],     #SOUTH middle straight
+                 [0,1,1]     #SOUTH right straight
+                ],  
+                
+                [          #POLE WEST
+                 [1,0,1],     #WEST left turn
+                 [1,1,0],     #WEST middle straight
+                 [1,1,0]      #WEST right straight
+                ], 
+                
+            ]
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -57,6 +78,12 @@ def set_direction_label(screen, p_x, p_y, text):
     pygame.draw.rect(screen, YELLOW, (coords[0] - 20,coords[1], 260, 40), 3)
     screen.blit(label, (coords[0], coords[1]))
     
+def set_direction_compass(screen, p_x, p_y, text):
+    coords = [p_x, p_y]
+    label = myfont.render(text, 1, YELLOW)
+    #pygame.draw.rect(screen, YELLOW, (coords[0],coords[1], 260, 40), 3)
+    screen.blit(label, (coords[0], coords[1]))
+    
 def build_roads(screen):
     road_color = (10,10,10) # light black color
     intersection_color = (255, 255, 255) # white intersection lines
@@ -84,6 +111,27 @@ def build_roads(screen):
     pygame.draw.rect(screen, road_color, (intersection_center_x, intersection_center_y, road_width, road_width))
     pygame.draw.rect(screen, intersection_color, (intersection_center_x, intersection_center_y, road_width, road_width), 3)
     pygame.draw.rect(screen, road_color, (intersection_center_x + 3, intersection_center_y + 3, road_width - 10, road_width - 5))
+    
+def draw_compass(screen):
+    x_pos = WIDTH - 120
+    y_pos = 100
+    
+    compass_width = 100
+    
+    
+    NORTH_COMPASS  = [               x_pos - 8,            10 ]
+    EAST_COMPASS   = [(x_pos + compass_width) - 40, y_pos - 18]
+    SOUTH_COMPASS  = [    x_pos - 8 , y_pos + 50 ]
+    WEST_COMPASS   = [x_pos - 80    ,   y_pos - 18 ]
+    
+    set_direction_compass(screen, NORTH_COMPASS[0], NORTH_COMPASS[1], "N")
+    set_direction_compass(screen, EAST_COMPASS[0], EAST_COMPASS[1], "E")
+    set_direction_compass(screen, SOUTH_COMPASS[0], SOUTH_COMPASS[1], "S")
+    set_direction_compass(screen, WEST_COMPASS[0], WEST_COMPASS[1], "W")  
+    
+    pygame.draw.rect(screen, YELLOW, (x_pos - (compass_width/2), y_pos, compass_width, 1)) #draw horizontal axis of compass
+    pygame.draw.rect(screen, YELLOW, (x_pos, y_pos - (compass_width/2), 1, compass_width) ) #draw vertical axis of compass
+    pygame.draw.circle(screen, YELLOW, (x_pos, y_pos), compass_width/2, width=1)
 
 while not game_over:
     for event in pygame.event.get():
@@ -102,13 +150,16 @@ while not game_over:
     EAST_DIR  = [   (WIDTH - 480), WIDTH_ALIGN  ]
     NORTH_DIR = [ HEIGHT_ALIGN,            60 ]
 
-    set_direction_label(screen, WEST_DIR[0], WEST_DIR[1], "West Light")
-    set_direction_label(screen, SOUTH_DIR[0], SOUTH_DIR[1], "South Light")
-    set_direction_label(screen, EAST_DIR[0], EAST_DIR[1], "East Light")
-    set_direction_label(screen, NORTH_DIR[0], NORTH_DIR[1], "North Light")
-
-    build_street_light_direction(screen,  WEST_DIR[0],  WEST_DIR[1], lightlist[:][0][:]) # WEST light
-    build_street_light_direction(screen, SOUTH_DIR[0], SOUTH_DIR[1], lightlist[:][1][:]) # SOUTH light
-    build_street_light_direction(screen,  EAST_DIR[0],  EAST_DIR[1], lightlist[:][2][:]) # EAST light
-    build_street_light_direction(screen, NORTH_DIR[0], NORTH_DIR[1], lightlist[:][3][:]) # NORTH light
+#     set_direction_label(screen, WEST_DIR[0], WEST_DIR[1], "West Light")
+#     set_direction_label(screen, SOUTH_DIR[0], SOUTH_DIR[1], "South Light")
+#     set_direction_label(screen, EAST_DIR[0], EAST_DIR[1], "East Light")
+#     set_direction_label(screen, NORTH_DIR[0], NORTH_DIR[1], "North Light")
+    
+    build_street_light_direction(screen, NORTH_DIR[0], NORTH_DIR[1], lightlist[:][0][:]) # NORTH light
+    build_street_light_direction(screen,  EAST_DIR[0],  EAST_DIR[1], lightlist[:][1][:]) # EAST light
+    build_street_light_direction(screen, SOUTH_DIR[0], SOUTH_DIR[1], lightlist[:][2][:]) # SOUTH light
+    build_street_light_direction(screen,  WEST_DIR[0],  WEST_DIR[1], lightlist[:][3][:]) # WEST light
+   
+    draw_compass(screen)
+   
     pygame.display.update()
