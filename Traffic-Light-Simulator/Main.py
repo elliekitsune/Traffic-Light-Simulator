@@ -1,5 +1,6 @@
 import pygame
 import sys
+from pygame import transform
 
 pygame.init()
 
@@ -11,6 +12,7 @@ YELLOW = (255, 255, 0)
 RED = (255,0,0)
 GREEN = (0,255,0)
 
+
 BACKGROUND_COLOR = (RGB_COLOR, RGB_COLOR, RGB_COLOR)
 
 lightlist = [#   red,  yellow,    green lights              
@@ -21,7 +23,7 @@ lightlist = [#   red,  yellow,    green lights
                 ],
                 
                 [          #POLE EAST
-                 [1,0,1],     #EAST left turn
+                 [0,1,1],     #EAST left turn
                  [1,1,0],     #EAST middle straight
                  [1,1,0]      #EAST right straight
                 ],
@@ -47,12 +49,12 @@ myfont = pygame.font.SysFont("monospace", 35)
 game_over = False
 
 def build_street_light(screen, p_x, p_y, light):
-    light_width = 140  # the width of the rectangle that the traffic light will be
-    light_height = 40  # the height of the traffic light
-    RADIUS = 10 # the radius of the light circles for each light
-    Y_INSET = 20 # how low into the square each circle will be
+    light_width = 80  # the width of the rectangle that the traffic light will be
+    light_height = 20  # the height of the traffic light
+    RADIUS = 6 # the radius of the light circles for each light
+    Y_INSET = 10 # how low into the square each circle will be
     Y_ALIGN = p_y + Y_INSET # position in the square of where each light is
-    X_COORDS = [30, 70, 110] # y coords of each of the three lights of green, yellow and red
+    X_COORDS = [15,40,65] # y coords of each of the three lights of green, yellow and red
     
     pygame.draw.rect(screen, (0,0,0), (p_x, p_y, light_width, light_height)) # builds the square backdrop for seeing lights
     pygame.draw.rect(screen, (255,255,255), (p_x, p_y, light_width, light_height), 1) # builds the square of each light structure section
@@ -62,7 +64,7 @@ def build_street_light(screen, p_x, p_y, light):
     pygame.draw.circle(screen,  GREEN, (p_x + X_COORDS[2], Y_ALIGN), RADIUS, light[2]) # green light on a section
 
 def build_street_light_direction(screen, p_x, p_y, lights):
-    light_gap = 150              # gap between each light in each direction
+    light_gap = 85              # gap between each light in each direction
 
     left   = p_x                 # left turn right
     middle = p_x + light_gap     # middle straight light
@@ -132,6 +134,11 @@ def draw_compass(screen):
     pygame.draw.rect(screen, YELLOW, (x_pos - (compass_width/2), y_pos, compass_width, 1)) #draw horizontal axis of compass
     pygame.draw.rect(screen, YELLOW, (x_pos, y_pos - (compass_width/2), 1, compass_width) ) #draw vertical axis of compass
     pygame.draw.circle(screen, YELLOW, (x_pos, y_pos), compass_width/2, width=1)
+    
+north_screen = pygame.Surface((250, 250))
+east_screen = pygame.Surface((250, 250))
+south_screen = pygame.Surface((250, 250))
+west_screen = pygame.Surface((250, 250))
 
 while not game_over:
     for event in pygame.event.get():
@@ -142,23 +149,31 @@ while not game_over:
     
     build_roads(screen)
 
-    HEIGHT_ALIGN = (WIDTH/2) - 220
+    HEIGHT_ALIGN = (WIDTH/2) - 120
     WIDTH_ALIGN = (HEIGHT/2) 
-
-    WEST_DIR  = [              20, WIDTH_ALIGN  ]
-    SOUTH_DIR = [ HEIGHT_ALIGN, (HEIGHT - 60) ]
-    EAST_DIR  = [   (WIDTH - 480), WIDTH_ALIGN  ]
-    NORTH_DIR = [ HEIGHT_ALIGN,            60 ]
-
-#     set_direction_label(screen, WEST_DIR[0], WEST_DIR[1], "West Light")
-#     set_direction_label(screen, SOUTH_DIR[0], SOUTH_DIR[1], "South Light")
-#     set_direction_label(screen, EAST_DIR[0], EAST_DIR[1], "East Light")
-#     set_direction_label(screen, NORTH_DIR[0], NORTH_DIR[1], "North Light")
+    NORTH_DIR = [ HEIGHT_ALIGN, (WIDTH_ALIGN - 140) ]         #North light placed at bottom of intersection for top incoming south bond traffic
+    EAST_DIR  = [   HEIGHT_ALIGN - 30, WIDTH_ALIGN - 135 ]    #East light placed at left of intersection for right incoming west bond traffic
+    SOUTH_DIR = [ HEIGHT_ALIGN, (WIDTH_ALIGN + 100) ]         #South light placed at top of intersection for bottom incoming north bond traffic
+    WEST_DIR  = [   (WIDTH - 480 + 20), WIDTH_ALIGN - 135  ]  #West light placed at right of intersection for left incoming east bond traffic
     
-    build_street_light_direction(screen, NORTH_DIR[0], NORTH_DIR[1], lightlist[:][0][:]) # NORTH light
-    build_street_light_direction(screen,  EAST_DIR[0],  EAST_DIR[1], lightlist[:][1][:]) # EAST light
-    build_street_light_direction(screen, SOUTH_DIR[0], SOUTH_DIR[1], lightlist[:][2][:]) # SOUTH light
-    build_street_light_direction(screen,  WEST_DIR[0],  WEST_DIR[1], lightlist[:][3][:]) # WEST light
+    
+    build_street_light_direction(north_screen, 0, 0, lightlist[:][0][:]) # NORTH light
+    north_screen = pygame.transform.rotate(north_screen, 0.0)
+    screen.blit(north_screen, ((NORTH_DIR[0],NORTH_DIR[1])), (0,0, 250, 20))
+                
+    build_street_light_direction(east_screen, 0, 0, lightlist[:][1][:]) # EAST light
+    east_screen = pygame.transform.rotate(east_screen, 90.0)
+    screen.blit(east_screen, (EAST_DIR[0],EAST_DIR[1]), (0,0, 20, 250))
+    
+    build_street_light_direction(south_screen, 0, 0, lightlist[:][2][:]) # SOUTH light
+    south_screen = pygame.transform.rotate(south_screen, 180.0)
+    screen.blit(south_screen, (SOUTH_DIR[0],SOUTH_DIR[1]), (0,230, 250, 20))#y, x, width_size, height_size
+    
+    
+    build_street_light_direction(west_screen,  0, 0, lightlist[:][3][:]) # WEST light
+    west_screen = pygame.transform.rotate(west_screen, -90.0)
+    screen.blit(west_screen, (WEST_DIR[0],WEST_DIR[1]), (230,0, 20, 250))
+   
    
     draw_compass(screen)
    
