@@ -1,5 +1,7 @@
 import pygame
 import sys
+import time
+import datetime
 from pygame import transform
 
 pygame.init()
@@ -47,6 +49,75 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 myfont = pygame.font.SysFont("monospace", 35)
 
 game_over = False
+
+#all the code for timer and the lights
+def onStreetLight(light, lightarray):
+    lightup = []
+    lightdown = []
+
+    if(light == 0 or light == 2):
+        lightup = lightarray[0]
+        lightdown = lightarray[2]
+        print("lights 0 and 2")
+    elif(light == 1 or light == 3):
+        lightup = lightarray[1]
+        lightdown = lightarray[3]
+        print("lights 1 and 3")
+    else:
+        print("wrong number")
+
+    setTime(5)
+    onGoSlowStopStraight(lightup[1], lightup[2], lightdown[1], lightdown[2])
+    setTime(10)
+    onGoSlowStopTurn(lightup[2], lightdown[2])        
+
+
+def onGoSlowStopTurn(lightsection1, lightsection2):
+   #go
+   lightsection1 = [0,0,1]
+   lightsection2 = [0,0,1]
+   setTime(5)
+   #slow
+   lightsection1 = [0,1,0]
+   lightsection2 = [0,1,0]
+   setTime(1)
+   #stop
+   lightsection1 = [1,0,0]
+   lightsection2 = [1,0,0]
+   setTime(1)
+
+def onGoSlowStopStraight(lightsection1_1, lightsection1_2, lightsection2_1, lightsection2_2):
+   #go
+   lightsection1_1 = [0,0,1]
+   lightsection1_2 = [0,0,1]
+   lightsection2_1 = [0,0,1]
+   lightsection2_2 = [0,0,1]
+   setTime(5)
+   #slow
+   lightsection1_1 = [0,1,0]
+   lightsection1_2 = [0,1,0]
+   lightsection2_1 = [0,1,0]
+   lightsection2_2 = [0,1,0]
+   setTime(1)
+   #stop
+   lightsection1_1 = [1,0,0]
+   lightsection1_2 = [1,0,0]
+   lightsection2_1 = [1,0,0]
+   lightsection2_2 = [1,0,0]
+   setTime(1)   
+
+def setTime(time_to_elapse):
+    later = datetime.datetime.now() + datetime.timedelta(seconds=time_to_elapse)
+
+    while(later > datetime.datetime.now()):
+        print ("later = " + later.strftime("%H:%M:%S"))
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+        print ("now = " + now)
+        print ("sleeping")
+        time.sleep(1)
+
+
+
 
 def build_street_light(screen, p_x, p_y, light):
     light_width = 80  # the width of the rectangle that the traffic light will be
@@ -125,13 +196,13 @@ def build_roads(screen):
 def draw_compass(screen):
     x_pos         = WIDTH - 120
     y_pos         = 100
-    compass_width = 100
+    compass_width = 100 #unused - was only used for east of compass but refactered code
     
     
-    NORTH_COMPASS  = [                    x_pos - 8,         10 ]
-    EAST_COMPASS   = [ (x_pos + compass_width) - 40, y_pos - 18 ]
-    SOUTH_COMPASS  = [                    x_pos - 8, y_pos + 50 ]
-    WEST_COMPASS   = [                   x_pos - 80, y_pos - 18 ]
+    NORTH_COMPASS  = [  x_pos - 8,         10 ]
+    EAST_COMPASS   = [ x_pos + 60, y_pos - 18 ]
+    SOUTH_COMPASS  = [  x_pos - 8, y_pos + 50 ]
+    WEST_COMPASS   = [ x_pos - 80, y_pos - 18 ]
     
     set_direction_compass(screen, NORTH_COMPASS[0], NORTH_COMPASS[1], "N")
     set_direction_compass(screen,  EAST_COMPASS[0],  EAST_COMPASS[1], "E")
@@ -141,20 +212,12 @@ def draw_compass(screen):
     pygame.draw.rect(screen, YELLOW, (x_pos - (compass_width/2), y_pos, compass_width, 1)) #draw horizontal axis of compass
     pygame.draw.rect(screen, YELLOW, (x_pos, y_pos - (compass_width/2), 1, compass_width) ) #draw vertical axis of compass
     pygame.draw.circle(screen, YELLOW, (x_pos, y_pos), compass_width/2, width=1)
-    
-north_screen = pygame.Surface((250, 250))
-east_screen  = pygame.Surface((250, 250))
-south_screen = pygame.Surface((250, 250))
-west_screen  = pygame.Surface((250, 250))
 
-while not game_over:
-    for event in pygame.event.get():
-        if(event.type == pygame.QUIT):
-            sys.exit()
-
-    screen.fill(BACKGROUND_COLOR)
-    
-    build_roads(screen)
+def drawLights():
+    north_screen = pygame.Surface((250, 250))
+    east_screen  = pygame.Surface((250, 250))
+    south_screen = pygame.Surface((250, 250))
+    west_screen  = pygame.Surface((250, 250))
 
     HEIGHT_ALIGN = (WIDTH/2) - 120
     WIDTH_ALIGN = (HEIGHT/2) 
@@ -180,8 +243,36 @@ while not game_over:
     build_street_light_direction(west_screen,  0, 0, lightlist[3]) # WEST light
     west_screen = pygame.transform.rotate(west_screen, -90.0)
     screen.blit(west_screen, (WEST_DIR[0],WEST_DIR[1]), (230,0, 20, 250))
-   
-   
-    draw_compass(screen)
-   
-    pygame.display.update()
+
+def updateLights():
+    i = 0;
+    while(i < 4):
+        onStreetLight(i, lightlist)
+        i += 1
+
+def main():    
+
+    while not game_over:
+        for event in pygame.event.get():
+            if(event.type == pygame.QUIT):
+                sys.exit()
+
+        screen.fill(BACKGROUND_COLOR)
+        
+        build_roads(screen)
+        
+        drawLights()
+
+        #draws a compass to show what direction the cars are going and lights are facing
+        draw_compass(screen)
+       
+        pygame.display.update()
+
+        updateLights()
+
+
+
+
+#check if there is a main method and if there is then run it
+if __name__ == "__main__":
+    main()
